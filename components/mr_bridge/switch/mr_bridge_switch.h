@@ -2,6 +2,7 @@
 
 #include "esphome/core/component.h"
 #include "esphome/components/switch/switch.h"
+#include "esphome/core/gpio.h"
 
 namespace esphome{
 
@@ -18,14 +19,14 @@ public:
    void dump_config() override;
    void loop() override;
 
-private:
+protected:
 
    InternalGPIOPin *m_pin_fwd = nullptr;
    InternalGPIOPin *m_pin_rev = nullptr;
    int m_pulse_len = 5;
    int m_pulse_cnt = 0;
-   bool m_current_state = false;
+   int m_current_state = -1;
    int m_new_state = -1;
-}
+};
 
 }}

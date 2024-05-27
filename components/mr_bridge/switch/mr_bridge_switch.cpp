@@ -14,7 +14,7 @@ void MRBridgeSwitch::set_mrbridge_config(InternalGPIOPin *pin_fwd, InternalGPIOP
    m_pulse_len = pulse_len;
 }
 
-void MRBridgeSwitch::setup() override
+void MRBridgeSwitch::setup()
 {
    this->m_pin_fwd->setup();
    this->m_pin_fwd->digital_write(false);
@@ -30,19 +30,19 @@ void MRBridgeSwitch::setup() override
    }
 }
 
-void MRBridgeSwitch::write_state(bool state) override
+void MRBridgeSwitch::write_state(bool state)
 {
    m_new_state = state;
 }
 
-void MRBridgeSwitch::dump_config() override
+void MRBridgeSwitch::dump_config()
 {
    ESP_LOGCONFIG(TAG, "FWD pin is '%d'...", this->m_pin_fwd->get_pin());
-   ESP_LOGCONFIG(TAG, "REV pin is '%d'...", this->m_pin_rev>get_pin());
+   ESP_LOGCONFIG(TAG, "REV pin is '%d'...", this->m_pin_rev->get_pin());
    ESP_LOGCONFIG(TAG, "Pulse length is '%d'...", this->m_pulse_len);
 }
 
-void MRBridgeSwitch::loop() override
+void MRBridgeSwitch::loop()
 {
    if (m_pulse_cnt > 0)
    {
