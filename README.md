@@ -1,2 +1,26 @@
 # esphome-external-components
 External components for esphome
+## mr_bridge
+This is a simple Motor/Relay pulse bridge that drives specified GPIO outputs for a specified period of time.
+Such implementation is actually used for controlling power relays in Tuya switches.
+
+### Usage:
+1. Add this external component to your yaml
+
+``` yaml
+external_components:
+  - source: github://szupi-ipuzs/esphome-external-components
+    components: mr_bridge
+```
+
+2. Add a switch and specify 2 gpio outputs as pin_forward and pin_reverse. You also need to define pulse_length (number 5-10000) which specifies number of esphome loops during which the outputs should be driven high.
+
+``` yaml
+switch:
+  - platform: mr_bridge
+    id: test_mrbridge_switch
+    name: "Test M/R bridge"
+    pin_forward: GPIO16
+    pin_reverse: GPIO17
+    pulse_length: 1000
+```
