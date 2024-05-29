@@ -13,7 +13,7 @@ external_components:
     components: mr_bridge
 ```
 
-2. Add a switch and specify 2 gpio outputs as `pin_forward` and `pin_reverse`. You also need to define `pulse_length` which specifies the time (in ms) during which the outputs should be driven high. The maximum value is 10000ms (10 seconds).\
+2. Add a switch and specify 2 gpio outputs as `pin_forward` and `pin_reverse`. You also need to define `pulse_length` which specifies the time (in ms) during which the outputs should be driven high. The allowed range is 10ms - 10000ms (10 seconds).\
 Additional optional `optimistic` parameter (True/False) specifies if the switch state should be changed immediately (True) or only after the pulse is finished (False). The default is True.
 
 ``` yaml

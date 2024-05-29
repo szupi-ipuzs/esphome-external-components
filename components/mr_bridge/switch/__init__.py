@@ -22,7 +22,7 @@ CONFIG_SCHEMA = switch.SWITCH_SCHEMA.extend(
       cv.Required(CONF_REV_PIN): pins.gpio_output_pin_schema,
       cv.Required(CONF_PULSE_LEN): cv.All(
                 cv.positive_time_period_milliseconds,
-                cv.Range(max=core.TimePeriod(milliseconds=10000)),
+                cv.Range(min=core.TimePeriod(milliseconds=10), max=core.TimePeriod(milliseconds=10000)),
             ),
       cv.Optional(CONF_OPTIMISTIC, default=True): cv.boolean
    }
