@@ -22,14 +22,24 @@ struct LogItem
 
 static const char* TAG = "bufflog";
 
+enum DumpingTrigger
+{
+   NONE,
+   OVERFLOW,
+   TIMEOUT,
+   FORCED
+};
+
 class BufferingLogger : public Component
 {
 public:
 
-   BufferingLogger(std::uint32_t sizeLimit, std::uint32_t dumpLinesPerLoop, std::function<void(const LogItem&)> dumpProcessor):
+   BufferingLogger(std::uint32_t bufferingTimeout, std::uint32_t sizeLimit, std::uint32_t dumpLinesPerLoop, std::function<void(const LogItem&)> dumpProcessor, std::function<void(DumpingTrigger)> dumpFinishedHandler = [](DumpingTrigger){}):
+   m_bufferingTimeout(bufferingTimeout),
    m_sizeLimit(sizeLimit),
    m_dumpLinesPerLoop(dumpLinesPerLoop),
-   m_dumpProcessor(std::move(dumpProcessor))
+   m_dumpProcessor(std::move(dumpProcessor)),
+   m_dumpFinishedHandler(std::move(dumpFinishedHandler))
    {}
 
    float get_setup_priority() const override
@@ -62,31 +72,26 @@ public:
             if (m_currentSize >= m_sizeLimit)
             {
                m_state = State::DUMPING;
+               m_trigger = DumpingTrigger::OVERFLOW;
+               ESP_LOGI(TAG, "Starting dump due to overflow");
             }
          });
       }
 
       m_state = State::BUFFERING;
+      m_startTimestamp = esphome::millis();
    }
 
    void loop() override
    {
-      uint32_t itemsDumped = 0;
-      while ((m_state == State::DUMPING) && (!m_paused) && (itemsDumped < m_dumpLinesPerLoop))
+      if (m_state == State::BUFFERING)
       {
-         if (m_items.empty())
-         {
-            stop();
-            break;
-         }
+         loopWhenBuffering();
+      }
 
-         ESP_LOGI(TAG, "dumping, left=%zu", m_items.size());
-
-         auto item = std::move(m_items.front());
-         m_items.pop();
-         m_currentSize -= item.combinedLength;
-         m_dumpProcessor(item);
-         ++itemsDumped;
+      if (m_state == State::DUMPING)
+      {
+         loopWhenDumping();
       }
    }
 
@@ -103,6 +108,8 @@ public:
       clearQueue();
       m_paused = false;
       m_state = State::BUFFERING;
+      m_startTimestamp = esphome::millis();
+      m_trigger = DumpingTrigger::NONE;
    }
 
    bool isBuffering() const
@@ -119,6 +126,8 @@ public:
    {
       m_state = State::DUMPING;
       m_paused = false;
+      m_trigger = DumpingTrigger::FORCED;
+      ESP_LOGI(TAG, "Forcing dump");
    }
 
    void pause()
@@ -131,6 +140,11 @@ public:
    {
       m_paused = false;
       ESP_LOGI(TAG, "Resuming");
+   }
+
+   DumpingTrigger getDumpingTrigger() const
+   {
+      return m_trigger;
    }
 
 private:
@@ -149,11 +163,48 @@ private:
       m_currentSize = 0;
    }
 
+   void loopWhenBuffering()
+   {
+      if ((m_bufferingTimeout != 0) && (m_startTimestamp - millis() > m_bufferingTimeout))
+      {
+         m_paused = false;
+         m_state = State::DUMPING;
+         m_trigger = DumpingTrigger::TIMEOUT;
+         ESP_LOGI(TAG, "Starting dump due to timeout");
+      }
+   }
+
+   void loopWhenDumping()
+   {
+      uint32_t itemsDumped = 0;
+      while ((m_state == State::DUMPING) && (!m_paused) && (itemsDumped < m_dumpLinesPerLoop))
+      {
+         if (m_items.empty())
+         {
+            stop();
+            m_dumpFinishedHandler(m_trigger);
+            break;
+         }
+
+         ESP_LOGI(TAG, "dumping, left=%zu", m_items.size());
+
+         auto item = std::move(m_items.front());
+         m_items.pop();
+         m_currentSize -= item.combinedLength;
+         m_dumpProcessor(item);
+         ++itemsDumped;
+      }
+   }
+
+   const std::uint32_t m_bufferingTimeout;
    const std::uint32_t m_sizeLimit;
    const std::uint32_t m_dumpLinesPerLoop;
    std::function<void(const LogItem&)> m_dumpProcessor;
+   std::function<void(DumpingTrigger)> m_dumpFinishedHandler;
    State m_state{State::IDLE};
+   std::uint32_t m_startTimestamp{0u};
    bool m_paused{false};
+   DumpingTrigger m_trigger{DumpingTrigger::NONE};
 
    std::queue<LogItem> m_items;
    std::uint32_t m_currentSize{0u};
