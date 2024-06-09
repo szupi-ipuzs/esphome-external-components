@@ -1,4 +1,4 @@
 # esphome-external-components
 External components for esphome
-## [buff_log](buff_log/README.md)
-## [mr_bridge](br_bridge/README.md)
+## [buff_log](components/buff_log/README.md)
+## [mr_bridge](components/br_bridge/README.md)
