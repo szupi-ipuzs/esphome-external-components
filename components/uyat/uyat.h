@@ -16,7 +16,7 @@
 namespace esphome {
 namespace uyat {
 
-enum class UyatDatapointType : uint8_t {
+enum UyatDatapointType {
   RAW = 0x00,      // variable length
   BOOLEAN = 0x01,  // 1 byte (0/1)
   INTEGER = 0x02,  // 4 byte

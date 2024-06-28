@@ -7,15 +7,22 @@ from esphome.const import (
     CONF_MAX_VALUE,
     CONF_MIN_VALUE,
     CONF_MULTIPLY,
-    CONF_STEP,
+    CONF_STEP
 )
-from .. import uyat_ns, CONF_UYAT_ID, Uyat
+from .. import uyat_ns, CONF_UYAT_ID, Uyat, UyatDatapointType
 
 DEPENDENCIES = ["uyat"]
 CODEOWNERS = ["@frankiboy1"]
 
+CONF_DATAPOINT_TYPE = "datapoint_type"
+
 UyatNumber = uyat_ns.class_("UyatNumber", number.Number, cg.Component)
 
+DATAPOINT_TYPES = {
+    "int": UyatDatapointType.INTEGER,
+    "uint": UyatDatapointType.INTEGER,
+    "enum": UyatDatapointType.ENUM,
+}
 
 def validate_min_max(config):
     if config[CONF_MAX_VALUE] <= config[CONF_MIN_VALUE]:
@@ -33,6 +40,7 @@ CONFIG_SCHEMA = cv.All(
             cv.Required(CONF_MIN_VALUE): cv.float_,
             cv.Required(CONF_STEP): cv.positive_float,
             cv.Optional(CONF_MULTIPLY, default=1.0): cv.float_,
+            cv.Optional(CONF_DATAPOINT_TYPE): cv.enum(DATAPOINT_TYPES, lower=True),
         }
     )
     .extend(cv.COMPONENT_SCHEMA),
@@ -56,3 +64,5 @@ async def to_code(config):
     cg.add(var.set_uyat_parent(parent))
 
     cg.add(var.set_number_id(config[CONF_NUMBER_DATAPOINT]))
+    if CONF_DATAPOINT_TYPE in config:
+        cg.add(var.set_datapoint_type(config[CONF_DATAPOINT_TYPE]))

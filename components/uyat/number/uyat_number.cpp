@@ -15,6 +15,10 @@ void UyatNumber::setup() {
       ESP_LOGV(TAG, "MCU reported number %u is: %u", datapoint.id, datapoint.value_enum);
       this->publish_state(datapoint.value_enum);
     }
+    if ((this->type_) && (this->type_ != datapoint.type))
+    {
+       ESP_LOGW(TAG, "Reported type (%d) different than previously set (%d)!", datapoint.type, this->type_);
+    }
     this->type_ = datapoint.type;
   });
 }

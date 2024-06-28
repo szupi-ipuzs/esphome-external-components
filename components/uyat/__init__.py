@@ -15,6 +15,7 @@ CONF_DATAPOINT_TYPE = "datapoint_type"
 CONF_STATUS_PIN = "status_pin"
 
 uyat_ns = cg.esphome_ns.namespace("uyat")
+UyatDatapointType = uyat_ns.enum("UyatDatapointType")
 Uyat = uyat_ns.class_("Uyat", cg.Component, uart.UARTDevice)
 
 DPTYPE_ANY = "any"
