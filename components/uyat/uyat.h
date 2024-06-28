@@ -87,7 +87,7 @@ struct UyatCommand {
 
 class Uyat : public Component, public uart::UARTDevice {
  public:
-  float get_setup_priority() const override { return setup_priority::LATE; }
+  float get_setup_priority() const override { return setup_priority::DATA; }
   void setup() override;
   void loop() override;
   void dump_config() override;
