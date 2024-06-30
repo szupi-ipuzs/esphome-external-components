@@ -15,6 +15,7 @@ class UyatNumber : public number::Number, public Component {
   void set_number_id(uint8_t number_id) { this->number_id_ = number_id; }
   void set_write_multiply(float factor) { multiply_by_ = factor; }
   void set_datapoint_type(UyatDatapointType type) { type_ = type; }
+  void restore_datapoint_value(float value) { this->value_to_restore_ = value; }
 
   void set_uyat_parent(Uyat *parent) { this->parent_ = parent; }
 
@@ -25,6 +26,7 @@ class UyatNumber : public number::Number, public Component {
   uint8_t number_id_{0};
   float multiply_by_{1.0};
   optional<UyatDatapointType> type_{};
+  optional<float> value_to_restore_{};
 };
 
 }  // namespace uyat

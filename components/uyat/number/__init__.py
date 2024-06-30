@@ -14,7 +14,11 @@ from .. import uyat_ns, CONF_UYAT_ID, Uyat, UyatDatapointType
 DEPENDENCIES = ["uyat"]
 CODEOWNERS = ["@frankiboy1"]
 
+CONF_DATAPOINT_HIDDEN = "datapoint_hidden"
+CONF_DATAPOINT_HIDDEN_INIT = "init"
+CONF_DATAPOINT_HIDDEN_INIT_VALUE = "value"
 CONF_DATAPOINT_TYPE = "datapoint_type"
+
 
 UyatNumber = uyat_ns.class_("UyatNumber", number.Number, cg.Component)
 
@@ -30,6 +34,12 @@ def validate_min_max(config):
     return config
 
 
+
+CONFIG_SCHEMA = cv.All(
+    
+
+)
+
 CONFIG_SCHEMA = cv.All(
     number.number_schema(UyatNumber)
     .extend(
@@ -40,7 +50,16 @@ CONFIG_SCHEMA = cv.All(
             cv.Required(CONF_MIN_VALUE): cv.float_,
             cv.Required(CONF_STEP): cv.positive_float,
             cv.Optional(CONF_MULTIPLY, default=1.0): cv.float_,
-            cv.Optional(CONF_DATAPOINT_TYPE): cv.enum(DATAPOINT_TYPES, lower=True),
+            cv.Optional(CONF_DATAPOINT_HIDDEN): cv.All(
+                cv.Schema({
+                    cv.Required(CONF_DATAPOINT_TYPE): cv.enum(DATAPOINT_TYPES, lower=True),
+                    cv.Optional(CONF_DATAPOINT_HIDDEN_INIT): cv.All(
+                        cv.Schema({
+                            cv.Required(CONF_DATAPOINT_HIDDEN_INIT_VALUE): cv.float_
+                        })
+                    )
+                })
+            )
         }
     )
     .extend(cv.COMPONENT_SCHEMA),
@@ -64,5 +83,7 @@ async def to_code(config):
     cg.add(var.set_uyat_parent(parent))
 
     cg.add(var.set_number_id(config[CONF_NUMBER_DATAPOINT]))
-    if CONF_DATAPOINT_TYPE in config:
-        cg.add(var.set_datapoint_type(config[CONF_DATAPOINT_TYPE]))
+    if hidden_config := config.get(CONF_DATAPOINT_HIDDEN):
+        cg.add(var.set_datapoint_type(hidden_config[CONF_DATAPOINT_TYPE]))
+        if hidden_init_config := hidden_config.get(CONF_DATAPOINT_HIDDEN_INIT):
+            cg.add(var.restore_datapoint_value(hidden_init_config[CONF_DATAPOINT_HIDDEN_INIT_VALUE]))
