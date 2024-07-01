@@ -34,12 +34,6 @@ def validate_min_max(config):
     return config
 
 
-
-CONFIG_SCHEMA = cv.All(
-    
-
-)
-
 CONFIG_SCHEMA = cv.All(
     number.number_schema(UyatNumber)
     .extend(
