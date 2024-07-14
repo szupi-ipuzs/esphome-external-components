@@ -13,6 +13,10 @@ static const int COMMAND_DELAY = 10;
 static const int RECEIVE_TIMEOUT = 300;
 static const int MAX_RETRIES = 5;
 
+static const uint8_t NET_STATUS_WIFI_CONNECTED = 0x03;
+static const uint8_t NET_STATUS_CLOUD_CONNECTED = 0x04;
+static const uint8_t FAKE_WIFI_RSSI = 100;
+
 void Uyat::setup() {
   this->set_interval("heartbeat", 15000, [this] {
     this->send_empty_command_(UyatCommandType::HEARTBEAT);
@@ -542,17 +546,17 @@ void Uyat::set_status_pin_() {
 }
 
 uint8_t Uyat::get_wifi_status_code_() {
-  uint8_t status = 0x03;
+  uint8_t status = NET_STATUS_WIFI_CONNECTED;
 
   // Protocol version 3 also supports specifying when connected to "the cloud"
   if (this->protocol_version_ >= 0x03) {
-    status = 0x04;
+    status = NET_STATUS_CLOUD_CONNECTED;
   }
 
   return status;
 }
 
-uint8_t Uyat::get_wifi_rssi_() { return 100; }
+uint8_t Uyat::get_wifi_rssi_() { return FAKE_WIFI_RSSI; }
 
 void Uyat::send_wifi_status_() {
   uint8_t status = this->get_wifi_status_code_();
