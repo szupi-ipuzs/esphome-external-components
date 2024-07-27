@@ -74,7 +74,8 @@ void DeepSleepLibretiny::begin_sleep(bool manual) {
     return;
   }
   if (wakeup_pins_.size() > 0) {
-    for (WakeUpPinItem& item : this->wakeup_pins_) {
+    for (WakeUpPinItem& item : this->wakeup_pins_)
+    {
       if (pin_prevents_sleep(item))
       {
           // Defer deep sleep until inactive
@@ -83,10 +84,10 @@ void DeepSleepLibretiny::begin_sleep(bool manual) {
           }
           ESP_LOGW(TAG, "Waiting for pin_ to switch state to enter deep sleep...");
           this->next_enter_deep_sleep_ = true;
-        }
-        return;
+          return;
       }
     }
+  }
 
   ESP_LOGI(TAG, "Beginning Deep Sleep");
   if (this->sleep_duration_.has_value()) {
@@ -106,7 +107,7 @@ void DeepSleepLibretiny::begin_sleep(bool manual) {
   }
   lt_deep_sleep_enter();
 }
-float DeepSleepLibretiny::get_setup_priority() const { return setup_priority::LATE; }
+float DeepSleepLibretiny::get_setup_priority() const { return setup_priority::DATA; }
 void DeepSleepLibretiny::prevent_deep_sleep() { this->prevent_ = true; }
 void DeepSleepLibretiny::allow_deep_sleep() { this->prevent_ = false; }
 
