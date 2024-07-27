@@ -36,6 +36,7 @@ enum WakeupPinMode {
 struct WakeUpPinItem {
   InternalGPIOPin *wakeup_pin;
   WakeupPinMode wakeup_pin_mode;
+  bool wakeup_level; // this may toggle in runtime if WAKEUP_PIN_MODE_INVERT_WAKEUP is set
 };
 
 struct WakeupCauseToRunDuration {
@@ -62,7 +63,7 @@ class DeepSleepLibretiny : public Component {
   /// Set the duration in ms the component should sleep once it's in deep sleep mode.
   void set_sleep_duration(uint32_t time_ms);
 
-  void add_wakeup_pin(const WakeUpPinItem pin) { this->wakeup_pins_.push_back(pin); }
+  void add_wakeup_pin(InternalGPIOPin *wakeup_pin, WakeupPinMode wakeup_pin_mode) {this->wakeup_pins_.emplace_back(std::move(WakeUpPinItem{wakeup_pin, wakeup_pin_mode, !wakeup_pin->is_inverted()})); }
   // Set the duration in ms for how long the code should run before entering
   // deep sleep mode, according to the cause the ESP32 has woken.
   void set_run_duration(WakeupCauseToRunDuration wakeup_cause_to_run_duration);
@@ -93,7 +94,7 @@ class DeepSleepLibretiny : public Component {
   optional<uint32_t> run_duration_;
   bool next_enter_deep_sleep_{false};
   bool prevent_{false};
-  bool prepare_pin(esphome::InternalGPIOPin *, WakeupPinMode);
+  bool pin_prevents_sleep(WakeUpPinItem& pinItem);
 };
 
 template<typename... Ts> class EnterDeepSleepAction : public Action<Ts...> {

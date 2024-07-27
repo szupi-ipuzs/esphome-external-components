@@ -6,21 +6,20 @@ from esphome.const import (
     CONF_HOUR,
     CONF_ID,
     CONF_MINUTE,
-    CONF_MODE,
-    CONF_NUMBER,
     CONF_PIN,
-    CONF_PINS,
     CONF_RUN_DURATION,
     CONF_SECOND,
     CONF_SLEEP_DURATION,
-    CONF_TIME_ID
+    CONF_TIME_ID,
 )
 
 from esphome.core import CORE
 
 deep_sleep_libretiny_ns = cg.esphome_ns.namespace("deep_sleep_libretiny")
 DeepSleepLibretiny = deep_sleep_libretiny_ns.class_("DeepSleepLibretiny", cg.Component)
-EnterDeepSleepAction = deep_sleep_libretiny_ns.class_("EnterDeepSleepAction", automation.Action)
+EnterDeepSleepAction = deep_sleep_libretiny_ns.class_(
+    "EnterDeepSleepAction", automation.Action
+)
 PreventDeepSleepAction = deep_sleep_libretiny_ns.class_(
     "PreventDeepSleepAction",
     automation.Action,
@@ -103,21 +102,14 @@ async def to_code(config):
         for item in conf:
             cg.add(
                 var.add_wakeup_pin(
-                    cg.StructInitializer(
-                        WakeUpPinItem,
-                        ("wakeup_pin", await cg.gpio_pin_expression(item[CONF_PIN])),
-                        (
-                            "wakeup_pin_mode",
-                            item.get(
-                                CONF_WAKEUP_PIN_MODE,
-                                WakeupPinMode.WAKEUP_PIN_MODE_IGNORE,
-                            ),
-                        ),
-                    )
+                    await cg.gpio_pin_expression(item[CONF_PIN]),
+                    item.get(
+                        CONF_WAKEUP_PIN_MODE, WakeupPinMode.WAKEUP_PIN_MODE_IGNORE
+                    ),
                 )
             )
 
-    cg.add_define("USE_DEEP_SLEEP")
+    # cg.add_define("USE_DEEP_SLEEP")
 
 
 DEEP_SLEEP_ACTION_SCHEMA = cv.Schema(
@@ -144,7 +136,7 @@ DEEP_SLEEP_ENTER_SCHEMA = cv.All(
 
 
 @automation.register_action(
-    "deep_sleep.enter", EnterDeepSleepAction, DEEP_SLEEP_ENTER_SCHEMA
+    "deep_sleep_libretiny.enter", EnterDeepSleepAction, DEEP_SLEEP_ENTER_SCHEMA
 )
 async def deep_sleep_enter_to_code(config, action_id, template_arg, args):
     paren = await cg.get_variable(config[CONF_ID])
@@ -164,12 +156,12 @@ async def deep_sleep_enter_to_code(config, action_id, template_arg, args):
 
 
 @automation.register_action(
-    "deep_sleep.prevent",
+    "deep_sleep_libretiny.prevent",
     PreventDeepSleepAction,
     automation.maybe_simple_id(DEEP_SLEEP_ACTION_SCHEMA),
 )
 @automation.register_action(
-    "deep_sleep.allow",
+    "deep_sleep_libretiny.allow",
     AllowDeepSleepAction,
     automation.maybe_simple_id(DEEP_SLEEP_ACTION_SCHEMA),
 )

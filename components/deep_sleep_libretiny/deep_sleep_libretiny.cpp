@@ -62,18 +62,9 @@ void DeepSleepLibretiny::set_run_duration(WakeupCauseToRunDuration wakeup_cause_
   wakeup_cause_to_run_duration_ = wakeup_cause_to_run_duration;
 }
 
-bool DeepSleepLibretiny::prepare_pin(InternalGPIOPin *pin, WakeupPinMode pin_mode) {
-  if (pin_mode == WAKEUP_PIN_MODE_KEEP_AWAKE && pin != nullptr &&
-      !this->sleep_duration_.has_value() && pin->digital_read()) {
-    // Defer deep sleep until inactive
-    if (!this->next_enter_deep_sleep_) {
-      this->status_set_warning();
-      ESP_LOGW(TAG, "Waiting for pin_ to switch state to enter deep sleep...");
-    }
-    this->next_enter_deep_sleep_ = true;
-    return false;
-  }
-  return true;
+bool DeepSleepLibretiny::pin_prevents_sleep(WakeUpPinItem& pinItem) {
+  return (pinItem.wakeup_pin_mode == WAKEUP_PIN_MODE_KEEP_AWAKE && pinItem.wakeup_pin != nullptr &&
+          !this->sleep_duration_.has_value() && (pinItem.wakeup_level == pinItem.wakeup_pin->digital_read()));
 }
 
 void DeepSleepLibretiny::set_run_duration(uint32_t time_ms) { this->run_duration_ = time_ms; }
@@ -83,11 +74,20 @@ void DeepSleepLibretiny::begin_sleep(bool manual) {
     return;
   }
   if (wakeup_pins_.size() > 0) {
-    for (WakeUpPinItem item : this->wakeup_pins_) {
-      if (!prepare_pin(item.wakeup_pin, item.wakeup_pin_mode))
+    for (WakeUpPinItem& item : this->wakeup_pins_) {
+      if (pin_prevents_sleep(item))
+      {
+          // Defer deep sleep until inactive
+          if (!this->next_enter_deep_sleep_) {
+            this->status_set_warning();
+          }
+          ESP_LOGW(TAG, "Waiting for pin_ to switch state to enter deep sleep...");
+          this->next_enter_deep_sleep_ = true;
+        }
         return;
+      }
     }
-  }
+
   ESP_LOGI(TAG, "Beginning Deep Sleep");
   if (this->sleep_duration_.has_value()) {
     ESP_LOGI(TAG, "Sleeping for %" PRId64 "us", *this->sleep_duration_);
@@ -96,21 +96,12 @@ void DeepSleepLibretiny::begin_sleep(bool manual) {
 
   if (this->sleep_duration_.has_value())
     lt_deep_sleep_config_timer((*this->sleep_duration_ / 1000) & 0xFFFFFFFF);
-  if (this->wakeup_pin_ != nullptr) {
-    bool level = !this->wakeup_pin_->is_inverted();
-    if (this->wakeup_pin_mode_ == WAKEUP_PIN_MODE_INVERT_WAKEUP && this->wakeup_pin_->digital_read()) {
-      level = !level;
-    }
-    lt_deep_sleep_config_gpio(1 << this->wakeup_pin_->get_pin(), level);
-  }
   if (wakeup_pins_.size() > 0) {
-    bool level;
-    for (WakeUpPinItem item : this->wakeup_pins_) {
-      level = !item.wakeup_pin->is_inverted();
+    for (WakeUpPinItem& item : this->wakeup_pins_) {
       if (item.wakeup_pin_mode == WAKEUP_PIN_MODE_INVERT_WAKEUP && item.wakeup_pin->digital_read()) {
-        level = !level;
+        item.wakeup_level = !item.wakeup_pin->digital_read();
       }
-      lt_deep_sleep_config_gpio(1 << item.wakeup_pin->get_pin(), level);
+      lt_deep_sleep_config_gpio(1 << item.wakeup_pin->get_pin(), item.wakeup_level);
     }
   }
   lt_deep_sleep_enter();
@@ -119,5 +110,5 @@ float DeepSleepLibretiny::get_setup_priority() const { return setup_priority::LA
 void DeepSleepLibretiny::prevent_deep_sleep() { this->prevent_ = true; }
 void DeepSleepLibretiny::allow_deep_sleep() { this->prevent_ = false; }
 
-}  // namespace deep_sleep
+}  // namespace deep_sleep_libretiny
 }  // namespace esphome
