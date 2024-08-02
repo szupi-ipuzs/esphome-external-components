@@ -6,3 +6,7 @@
 	path = components/mr_bridge
 	url = https://github.com/szupi-ipuzs/esphome-external-mrbridge.git
 	branch = main
+[submodule "components/uyat"]
+	path = components/uyat
+	url = https://github.com/szupi-ipuzs/esphome-external-uyat.git
+	branch = main
