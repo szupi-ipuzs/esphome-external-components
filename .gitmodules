@@ -2,3 +2,7 @@
 	path = components/buff_log
 	url = https://github.com/szupi-ipuzs/esphome-external-bufflog.git
 	branch = main
+[submodule "components/mr_bridge"]
+	path = components/mr_bridge
+	url = https://github.com/szupi-ipuzs/esphome-external-mrbridge.git
+	branch = main
