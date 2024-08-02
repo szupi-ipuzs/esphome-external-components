@@ -1,0 +1,4 @@
+[submodule "components/buff_log"]
+	path = components/buff_log
+	url = https://github.com/szupi-ipuzs/esphome-external-bufflog.git
+	branch = main
