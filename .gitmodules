@@ -14,3 +14,6 @@
 	path = components/deep_sleep_libretiny
 	url = https://github.com/szupi-ipuzs/esphome-external-lt-deepsleep.git
 	branch = main
+[submodule "components/lowpoweruyat"]
+	path = components/lowpoweruyat
+	url = https://github.com/szupi-ipuzs/lowpoweruyat.git
