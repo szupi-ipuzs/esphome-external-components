@@ -17,3 +17,6 @@
 [submodule "components/lpuyat"]
 	path = components/lpuyat
 	url = https://github.com/szupi-ipuzs/lowpoweruyat.git
+[submodule "components/tuya-battery"]
+	path = components/tuya-battery
+	url = https://github.com/szupi-ipuzs/tuya_battery.git
