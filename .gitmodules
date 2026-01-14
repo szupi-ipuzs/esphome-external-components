@@ -10,10 +10,6 @@
 	path = components/uyat
 	url = https://github.com/szupi-ipuzs/esphome-external-uyat.git
 	branch = main
-[submodule "components/deep_sleep_libretiny"]
-	path = components/deep_sleep_libretiny
-	url = https://github.com/szupi-ipuzs/esphome-external-lt-deepsleep.git
-	branch = main
 [submodule "components/lpuyat"]
 	path = components/lpuyat
 	url = https://github.com/szupi-ipuzs/lowpoweruyat.git
